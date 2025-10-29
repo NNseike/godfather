@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英語タイピング練習</title>
+    <style>
+        /* 白を基調としたシンプルなUIデザイン */
+        body {
+            font-family: 'Segoe UI', Meiryo, 'Hiragino Kaku Gothic ProN', 'MS PGothic', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+        p {
+            text-align: center;
+            color: #666;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+
+        /* --- Chapter Selection Styles --- */
+        #selection-container h1 {
+            margin-bottom: 20px;
+        }
+        #chapter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        .chapter-btn {
+            padding: 12px 20px;
+            font-size: 1.1em;
+            cursor: pointer;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            flex-grow: 1;
+            min-width: 150px;
+        }
+        .chapter-btn:hover {
+            background-color: #0056b3;
+        }
+        .chapter-btn.all {
+            background-color: #28a745;
+            width: 100%;
+        }
+        .chapter-btn.all:hover {
+            background-color: #218838;
+        }
+
+        /* --- Game Styles --- */
+        #game-container {
+            display: none; /* Initially hidden */
+        }
+        #character-display {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 15px;
+            height: 25px;
+            text-align: center;
+        }
+        #japanese-display {
+            font-size: 1.4em;
+            color: #222;
+            margin-bottom: 20px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        #typing-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            color: #333;
+            border-radius: 4px;
+            box-sizing: border-box;
+            text-align: center;
+            transition: border-color 0.1s, box-shadow 0.1s;
+        }
+        #typing-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+        }
+        #typing-input.correct {
+            border-color: #28a745;
+            background-color: #f0fff4;
+        }
+        #typing-input.incorrect-flash {
+            border-color: #dc3545;
+        }
+        #answer-display {
+            margin-top: 15px;
+            font-size: 1.2em;
+            color: #555;
+            min-height: 50px;
+            text-align: center;
+            padding: 10px;
+            line-height: 1.6;
+        }
+        /* --- Explanation Styles --- */
+        .explanation {
+            font-size: 0.95em;
+            color: #444;
+            text-align: left;
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #fcfcfc;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            line-height: 1.7;
+        }
+        .explanation strong {
+            color: #0056b3;
+        }
+        #progress-container {
+            margin-top: 20px;
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        #progress-bar {
+            width: 0%;
+            height: 10px;
+            background-color: #007bff;
+            transition: width 0.5s;
+        }
+        .restart-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            background-color: #6c757d;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .restart-button:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="selection-container" class="container">
+        <h1>英語タイピング練習</h1>
+        <p>学習したいチャプターを選択してください。</p>
+        <div id="chapter-buttons">
+            <!-- Buttons will be generated here by JavaScript -->
+        </div>
+    </div>
+
+    <div id="game-container" class="container">
+        <p style="font-size:0.9em; margin-bottom: 20px;">正解すると自動で次の問題に進みます。文法のヒントが必要な場合はいつでもEnterキーを押してください。</p>
+
+        <div id="character-display"></div>
+        <div id="japanese-display"></div>
+        
+        <input type="text" id="typing-input" placeholder="ここに英語で入力..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        
+        <div id="answer-display"></div>
+
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA with explanations ---
+const fullScript = [
+  { char: "MOE GREENE", en: "Mike, good to see you.", ja: "マイク、会えて嬉しいよ。", explanation: "<strong>表現</strong>: <strong>good to see you</strong> - 「会えて嬉しい」という一般的な挨拶の表現です。初対面ではなく、知り合いに会った時に使います。" },
+  { char: "MOE GREENE", en: "Got everything you want?", ja: "何か不足なものはないかい？", explanation: "<strong>文法</strong>: 主語の \"Have you\" が省略された口語表現です。本来は \"Have you got everything you want?\" となります。「あなたが欲しいものは全て手に入れたか？」という意味です。" },
+  { char: "MICHAEL CORLEONE", en: "Thanks.", ja: "ありがとう。", explanation: "<strong>単語</strong>: <strong>Thanks</strong> - \"Thank you\" をよりカジュアルにした表現で、「ありがとう」という意味です。" },
+  { char: "MOE GREENE", en: "The chef cooked for you special;", ja: "シェフが特別に腕を振るった。", explanation: "<strong>文法</strong>: 口語では、副詞の \"specially\" の代わりに形容詞の \"special\" が使われることがあります。「あなたのために特別に」という意味合いになります。 <strong>単語</strong>: <strong>chef</strong> - 「料理長」。" },
+  { char: "MOE GREENE", en: "the dancers will kick your tongue out", ja: "ダンサーたちも最高だ。", explanation: "<strong>表現</strong>: <strong>kick your tongue out</strong> - 直訳すると「舌を蹴り出す」ですが、「たまらなく素晴らしい」「度肝を抜かれる」といった意味で使われる、やや古風なスラング表現です。" },
+  { char: "MOE GREENE", en: "and you credit is good!", ja: "あんたのツケも利くぜ！", explanation: "<strong>単語</strong>: <strong>credit</strong> - ここではカジノなどでの「ツケ」や「信用」を意味します。 <strong>is good</strong> - 「有効である」「通用する」という意味です。" },
+  { char: "MOE GREENE", en: "Draw chips for all these people so they can play on the house.", ja: "ここにいる皆にチップを渡してやれ、店の奢りだ。", explanation: "<strong>単語</strong>: <strong>Draw</strong> - ここでは「（チップなどを）引き出す、受け取る」という意味です。 <strong>chips</strong> - カジノで現金代わりに使われるコインのことです。<br><strong>表現</strong>: <strong>on the house</strong> - 「店のおごりで」「無料で」という意味のイディオムです。" },
+  { char: "MICHAEL CORLEONE", en: "Is my credit good enough to buy you out?", ja: "俺の信用で、あんたを買収できるか？", explanation: "<strong>文法</strong>: <strong>形容詞 + enough to do</strong> - 「～するのに十分～だ」という意味の構文です。<br><strong>単語</strong>: <strong>credit</strong> - ここでは「信用、財力」の両方の意味合いが含まれます。 <strong>buy out</strong> - 「（会社の株などを）買い占める、買収する」という意味の句動詞です。" },
+  { char: "MOE GREENE", en: "Buy me out?...", ja: "俺を買収だと？…", explanation: "<strong>表現</strong>: 相手の言った言葉を疑問形で繰り返すことで、強い驚きや「信じられない」という気持ちを表しています。" },
+  { char: "MICHAEL CORLEONE", en: "The hotel, the casino.", ja: "このホテルとカジノだ。", explanation: "<strong>文法</strong>: 名詞だけを並べた省略文です。文脈から「（我々が買収したいのは）ホテルとカジノだ」という意味であることが明確に伝わります。" },
+  { char: "MICHAEL CORLEONE", en: "The Corleone family wants to buy you out.", ja: "コルレオーネ・ファミリーがあんたを買収したい。", explanation: "<strong>文法</strong>: <strong>want to do</strong> - 「～したい」という願望を表す基本的な形です。" },
+  { char: "MOE GREENE", en: "The Corleone family wants to buy me out.", ja: "コルレオーネ・ファミリーが俺を買収したいだと。", explanation: "<strong>表現</strong>: 今度は平叙文で相手の言葉を繰り返すことで、侮辱されたという怒りの感情を表現しています。" },
+  { char: "MOE GREENE", en: "I buy you out.", ja: "俺がお前らを買収するんだ。", explanation: "<strong>文法</strong>: 現在形 \"buy\" を使うことで、「（立場は逆で）俺がお前らを買収する側なのが当然だ」という強い主張や意志を表しています。" },
+  { char: "MOE GREENE", en: "You don't buy me out.", ja: "お前らが俺を買収するんじゃない。", explanation: "<strong>文法</strong>: 強い否定の \"You don't...\" を使うことで、マイケルの提案を断固として拒絶する意志を示しています。" },
+  { char: "MICHAEL CORLEONE", en: "Your casino loses money.", ja: "あんたのカジノは赤字だ。", explanation: "<strong>表現</strong>: <strong>lose money</strong> - 「赤字である」「損をする」という意味の決まった言い方です。" },
+  { char: "MICHAEL CORLEONE", en: "Maybe we can do better.", ja: "我々ならもっと上手くやれる。", explanation: "<strong>単語</strong>: <strong>Maybe</strong> - 「もしかしたら、たぶん」。 <strong>do better</strong> - 「より上手くやる」。ここではカジノの経営を指しています。" },
+  { char: "MOE GREENE", en: "You think I scam?", ja: "俺がイカサマしてるとでも？", explanation: "<strong>文法</strong>: 口語的な疑問文で、本来の \"Do you think I scam?\" から \"Do\" が省略されています。<br><strong>単語</strong>: <strong>scam</strong> - ここでは動詞として使われ、「詐欺を働く、イカサマをする」という意味です。" },
+  { char: "MICHAEL CORLEONE", en: "You're unlucky.", ja: "運が悪いだけだ。", explanation: "<strong>単語</strong>: <strong>unlucky</strong> - 「不運な、運が悪い」。能力ではなく「運」のせいにすることで、相手を効果的に侮辱しています。" },
+  { char: "MOE GREENE", en: "You goddamn dagos.", ja: "このクソイタリア野郎が。", explanation: "<strong>単語</strong>: <strong>goddamn</strong> - 「ちくしょう、いまいましい」という意味の罵り言葉。 <strong>dagos</strong> - イタリア系やスペイン系の人々に対する非常に侮辱的な蔑称です。" },
+  { char: "MOE GREENE", en: "I do you a favor and take Freddie in when you're having a bad time, and then you try to push me out.", ja: "お前らが大変な時に、恩を売ってフレディを預かってやったのに、今度は俺を追い出そうとするのか。", explanation: "<strong>表現</strong>: <strong>do someone a favor</strong> - 「（人）に恩恵を施す」。 <strong>take someone in</strong> - 「（人）を泊める、受け入れる」。 <strong>have a bad time</strong> - 「困難な時期を過ごす」。 <strong>push me out</strong> - 「俺を追い出す」。" },
+  { char: "MICHAEL CORLEONE", en: "You took Freddie in because the Corleone family bankrolled your casino.", ja: "フレディを預かったのは、コルレオーネ・ファミリーがあんたのカジノに資金援助したからだ。", explanation: "<strong>単語</strong>: <strong>bankroll</strong> - 動詞で「～に資金を提供する、財政的に支援する」という意味です。" },
+  { char: "MICHAEL CORLEONE", en: "You and the Corleone family are evened out.", ja: "これで貸し借りなしだ。", explanation: "<strong>表現</strong>: <strong>be evened out</strong> - 「貸し借りがなくなる、チャラになる、清算される」という意味の表現です。" },
+  { char: "MICHAEL CORLEONE", en: "This is for business; name your price.", ja: "これはビジネスだ。言い値でいい。", explanation: "<strong>表現</strong>: <strong>name your price</strong> - 「あなたの言い値でいい、値段を言いなさい」という、交渉で使われる決まり文句です。" },
+  { char: "MOE GREENE", en: "The Corleone family don't have that kind of muscle anymore.", ja: "コルレオーネ・ファミリーにもう昔のような力はない。", explanation: "<strong>文法</strong>: \"family\" は単数名詞ですが、構成員を意識して複数扱いの \"don't\" が使われることがあります。<br><strong>単語</strong>: <strong>muscle</strong> - ここでは「腕力、影響力、権力」という比喩的な意味です。 <strong>anymore</strong> - 否定文で「もはや～ない」。" },
+  { char: "MOE GREENE", en: "The Godfather is sick.", ja: "ゴッドファーザーは病気だ。", explanation: "<strong>単語</strong>: <strong>sick</strong> - 「病気で」。" },
+  { char: "MOE GREENE", en: "You're getting chased out of New York by Barzini and the other families, and you think you can find easier pickings here.", ja: "お前らはバルジーニや他のファミリーにニューヨークから追い出されかけてるくせに、ここなら楽に稼げると思ったんだろう。", explanation: "<strong>文法</strong>: <strong>be getting + 過去分詞</strong> - 「～されつつある」という受け身の進行形です。<br><strong>表現</strong>: <strong>easier pickings</strong> - 「楽な儲け話、たやすい獲物」。" },
+  { char: "MOE GREENE", en: "I've talked to Barzini; I can make a deal with him and keep my hotel!", ja: "バルジーニとは話がついている。奴と手を組んで、このホテルを守ることもできるんだ！", explanation: "<strong>文法</strong>: <strong>I've talked</strong> - 現在完了形（have + 過去分詞）で、「すでに話した」という完了・結果を表します。<br><strong>表現</strong>: <strong>make a deal with</strong> - 「～と取引をする、契約を結ぶ」。" },
+  { char: "MICHAEL CORLEONE", en: "Is that why you thought you could slap Freddie around in public?", ja: "だから人前でフレディを殴れたのか？", explanation: "<strong>文法</strong>: <strong>Is that why S V?</strong> - 「それがSがVした理由ですか？」と相手の行動の動機を問いただす表現です。<br><strong>単語</strong>: <strong>slap around</strong> - 「殴りつける」。 <strong>in public</strong> - 「人前で、公然と」。" },
+  { char: "FREDO CORLEONE", en: "Ah Mike, that was nothing.", ja: "ああ、マイク、なんてことないんだ。", explanation: "<strong>表現</strong>: <strong>that was nothing</strong> - 「大したことではなかった」「何でもない」と事態を軽く見せようとする時の決まり文句です。" },
+  { char: "FREDO CORLEONE", en: "Moe didn't mean anything.", ja: "モーに悪気はなかったんだ。", explanation: "<strong>表現</strong>: <strong>not mean anything (by it)</strong> - 「（それによって）特に何かを意図したわけではない」「悪気はない」という意味です。" },
+  { char: "FREDO CORLEONE", en: "He flies off the handle sometimes; but me and him are good friends.", ja: "彼は時々カッとなるだけで、俺たちは良い友達なんだ。", explanation: "<strong>表現</strong>: <strong>fly off the handle</strong> - 「カッとなる、キレる」という意味のイディオムです。<br><strong>文法</strong>: 主語なので本来は \"he and I\" ですが、口語では目的格の \"me and him\" が使われることがよくあります。" },
+  { char: "FREDO CORLEONE", en: "Right, Moe?", ja: "だろ、モー？", explanation: "<strong>表現</strong>: <strong>Right?</strong> - 文末につけて「～だよね？」「でしょ？」と相手に同意を求める、口語的な付加疑問のような働きをします。" },
+  { char: "MOE GREENE", en: "Yeah sure.", ja: "ああ、もちろんだ。", explanation: "<strong>表現</strong>: <strong>Yeah sure</strong> - \"Yes, of course\" と同じ意味の、くだけた同意の表現です。" },
+  { char: "MOE GREENE", en: "Sometimes I gotta kick asses to make this place run right.", ja: "この店をちゃんと運営するには、時にはケツを蹴り上げなきゃならん。", explanation: "<strong>文法</strong>: <strong>gotta</strong> - \"have got to\" の口語的な短縮形で、「～しなければならない」。 <strong>make O C</strong> - 「OをCの状態にさせる」という使役動詞の構文です。<br><strong>表現</strong>: <strong>kick ass(es)</strong> - 「尻を蹴る」から転じて、「活を入れる、厳しく対処する」という意味のスラングです。" },
+  { char: "MOE GREENE", en: "Freddie and I had a little argument and I had to straighten him out.", ja: "フレディとはちょっとした口論があって、灸を据えてやる必要があったんだ。", explanation: "<strong>単語</strong>: <strong>argument</strong> - 「口論、言い争い」。<br><strong>表現</strong>: <strong>straighten someone out</strong> - 「（人）の悪い癖などを正す、更生させる、懲らしめる」といった意味の句動詞です。" },
+  { char: "MICHAEL CORLEONE", en: "You straightened my brother out?", ja: "兄さんを懲らしめた？", explanation: "<strong>表現</strong>: 相手が使った \"straighten him out\" という言葉を疑問形でそのまま返すことで、強い怒りや不快感、そして「お前にそんな権利があるのか」という挑戦的な態度を示しています。" },
+  { char: "MOE GREENE", en: "Hell, he was banging cocktail waitresses two at a time.", ja: "ああ、あいつは一度に二人のウェイトレスとやってたんだ。", explanation: "<strong>単語</strong>: <strong>Hell</strong> - 文頭で驚きや苛立ちを表す間投詞。「ちぇっ」というニュアンス。 <strong>banging</strong> - \"bang\" は「～と性交する」という意味の下品なスラングです。 <strong>two at a time</strong> - 「一度に二つ（二人）」。" },
+  { char: "MOE GREENE", en: "Players couldn't get a drink.", ja: "客は飲み物も頼めない有り様だった。", explanation: "<strong>単語</strong>: <strong>Players</strong> - ここではカジノの「客」を指します。" },
+  { char: "MICHAEL CORLEONE", en: "I have to go back to New York tomorrow. Think of your price.", ja: "明日ニューヨークに戻る。値段を考えておけ。", explanation: "<strong>文法</strong>: 後半は命令形です。モーの言い分を無視し、一方的に交渉を進める冷酷さを示しています。<br><strong>表現</strong>: <strong>have to do</strong> - 「～しなければならない」。 <strong>think of</strong> - 「～について考える」。" },
+  { char: "MOE GREENE", en: "You son of a bitch, you think you can brush me off like that?", ja: "この野郎、そんな風に俺をあしらえると思うなよ。", explanation: "<strong>表現</strong>: <strong>son of a bitch</strong> - 相手を最大限に侮辱する罵り言葉です。 <strong>brush someone off</strong> - 「（人）を無視する、冷たくあしらう」。" },
+  { char: "MOE GREENE", en: "I made my bones when you were going out with cheerleaders.", ja: "お前がチアリーダーとデートしてる頃に、俺はもう名を上げてたんだ。", explanation: "<strong>表現</strong>: <strong>make one's bones</strong> - マフィアの世界で「殺しなどで功績を上げ、組織内で認められる」という意味のスラングです。 <strong>go out with</strong> - 「～とデートする、付き合う」。" },
+  { char: "FREDO CORLEONE", en: "Tom, you're the Consigliere; you can talk to the Don and advise him.", ja: "トム、君は相談役だ。ドンに話して、彼を諭してくれ。", explanation: "<strong>単語</strong>: <strong>Consigliere</strong> - イタリア語で、マフィアのボスに仕える「相談役」のことです。 <strong>Don</strong> - マフィアのボスの敬称。 <strong>advise</strong> - 「～に助言する、忠告する」。" },
+  { char: "MICHAEL CORLEONE", en: "The Don has semi-retired.", ja: "ドンは半引退の状態だ。", explanation: "<strong>単語</strong>: <strong>semi-retired</strong> - 「半ば引退した」。実務からは退いている状態を指します。" },
+  { char: "MICHAEL CORLEONE", en: "I'm running the Family business now.", ja: "今は俺がファミリーのビジネスを仕切っている。", explanation: "<strong>文法</strong>: 現在進行形 \"I'm running\" を使うことで、「今、現在進行形で仕切っている」という事実を強調しています。<br><strong>単語</strong>: <strong>run</strong> - ここでは「～を経営する、運営する、仕切る」。" },
+  { char: "MICHAEL CORLEONE", en: "So anything you have to say, say it to me.", ja: "だから、何か言いたいことがあるなら、俺に言え。", explanation: "<strong>文法</strong>: \"anything (that) you have to say\" のように関係代名詞が省略されています。「あなたが言わなければならないことは何でも」という意味です。後半は命令形になっています。" },
+  { char: "MICHAEL CORLEONE", en: "Freddie, you're my older brother.", ja: "フレディ、あんたは俺の兄だ。", explanation: "<strong>単語</strong>: <strong>older brother</strong> - 「兄」。\"elder brother\" よりも口語的な表現です。" },
+  { char: "MICHAEL CORLEONE", en: "I love you.", ja: "愛してる。", explanation: "<strong>表現</strong>: 兄弟愛を示す言葉ですが、この文脈では、次に続く厳しい命令の前置きとしての役割も持っています。" },
+  { char: "MICHAEL CORLEONE", en: "But don't ever take sides with anybody against the Family again.", ja: "だが二度と、ファミリーに逆らう者の味方をするな。", explanation: "<strong>文法</strong>: <strong>don't ever... again</strong> - 「二度と～するな」という非常に強い禁止の命令形です。\"ever\" が意味を強調します。<br><strong>表現</strong>: <strong>take sides with</strong> - 「～の側につく、～に味方する」。 <strong>against the Family</strong> - 「ファミリーに敵対して」。" }
+];
+        // --- Global State ---
+        let activeScript = [];
+        let currentLineIndex = 0;
+        const CHAPTER_SIZE = 5;
+
+        // --- DOM Elements ---
+        const selectionContainer = document.getElementById('selection-container');
+        const gameContainer = document.getElementById('game-container');
+        const chapterButtonsContainer = document.getElementById('chapter-buttons');
+        const characterDisplay = document.getElementById('character-display');
+        const japaneseDisplay = document.getElementById('japanese-display');
+        const typingInput = document.getElementById('typing-input');
+        const answerDisplay = document.getElementById('answer-display');
+        const progressBar = document.getElementById('progress-bar');
+        
+        // --- Core Game Logic ---
+        function setupLine() {
+            if (currentLineIndex >= activeScript.length) {
+                showEndScreen();
+                return;
+            }
+            const currentLine = activeScript[currentLineIndex];
+            characterDisplay.textContent = currentLine.char;
+            japaneseDisplay.textContent = currentLine.ja;
+            typingInput.value = '';
+            typingInput.className = '';
+            typingInput.disabled = false;
+            typingInput.focus();
+            answerDisplay.textContent = '';
+            updateProgressBar();
+        }
+        
+        function updateProgressBar() {
+            const progress = ((currentLineIndex + 1) / activeScript.length) * 100;
+            progressBar.style.width = progress + '%';
+        }
+        
+        function handleInput() {
+            if (typingInput.disabled) return;
+            const currentLine = activeScript[currentLineIndex];
+            const correctAnswer = currentLine.en;
+            const userInput = typingInput.value;
+            
+            if (correctAnswer.startsWith(userInput)) {
+                typingInput.classList.remove('incorrect-flash');
+                if (userInput === correctAnswer) {
+                    typingInput.classList.add('correct');
+                    answerDisplay.innerHTML = `<strong style="color: #28a745;">正解！</strong>`;
+                    typingInput.disabled = true;
+                    updateProgressBar();
+                    setTimeout(() => nextLine(), 800);
+                }
+            } else {
+                typingInput.value = userInput.slice(0, -1);
+                typingInput.classList.add('incorrect-flash');
+                setTimeout(() => typingInput.classList.remove('incorrect-flash'), 200);
+            }
+        }
+
+        function nextLine() {
+            currentLineIndex++;
+            setupLine();
+        }
+
+        function startGame(selectedScript) {
+            activeScript = selectedScript;
+            currentLineIndex = 0;
+            selectionContainer.style.display = 'none';
+            gameContainer.style.display = 'block';
+            setupLine();
+        }
+        
+        // --- Screen Management ---
+        function showEndScreen() {
+            characterDisplay.textContent = '完了';
+            japaneseDisplay.textContent = '選択した範囲の練習が終了しました。お疲れ様でした。';
+            typingInput.style.display = 'none';
+            answerDisplay.textContent = '';
+            
+            const existingButton = gameContainer.querySelector('.restart-button');
+            if (!existingButton) {
+                const restartButton = document.createElement('button');
+                restartButton.textContent = 'チャプター選択に戻る';
+                restartButton.className = 'restart-button';
+                restartButton.onclick = () => showSelectionScreen();
+                gameContainer.appendChild(restartButton);
+            }
+        }
+
+        function showSelectionScreen() {
+            gameContainer.style.display = 'none';
+            selectionContainer.style.display = 'block';
+            const restartButton = gameContainer.querySelector('.restart-button');
+            if (restartButton) {
+                restartButton.remove();
+            }
+            typingInput.style.display = 'block';
+        }
+
+        function createChapterSelection() {
+            const allBtn = document.createElement('button');
+            allBtn.textContent = `All Questions (${fullScript.length})`;
+            allBtn.className = 'chapter-btn all';
+            allBtn.onclick = () => startGame(fullScript);
+            chapterButtonsContainer.appendChild(allBtn);
+            
+            for (let i = 0; i < fullScript.length; i += CHAPTER_SIZE) {
+                const chapter = fullScript.slice(i, i + CHAPTER_SIZE);
+                const chapterNum = (i / CHAPTER_SIZE) + 1;
+                
+                const chapterBtn = document.createElement('button');
+                chapterBtn.textContent = `Chapter ${chapterNum}`;
+                chapterBtn.className = 'chapter-btn';
+                chapterBtn.onclick = () => startGame(chapter);
+                chapterButtonsContainer.appendChild(chapterBtn);
+            }
+        }
+
+        // --- Event Listeners ---
+        typingInput.addEventListener('input', handleInput);
+
+        typingInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); 
+                if (gameContainer.style.display !== 'block' || typingInput.disabled) return;
+                
+                const currentLine = activeScript[currentLineIndex];
+                const correctAnswer = currentLine.en;
+                const explanation = currentLine.explanation;
+                
+                answerDisplay.innerHTML = `正解: <strong style="color: #007bff;">${correctAnswer}</strong>
+                                           <div class="explanation">${explanation}</div>`;
+            }
+        });
+        
+        // --- Initializer ---
+        window.onload = () => {
+            createChapterSelection();
+        };
+
+    </script>
+</body>
+</html>
